@@ -3,6 +3,7 @@ package com.baocode.cafe
 import android.os.Handler
 import android.os.Looper
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -98,7 +99,6 @@ private fun DrawScope.drawNpcSprite(p: Offset, scale: Float, type: NpcType, faci
         NpcType.GUEST_CAP -> drawRoundRect(c.accent,Offset(q.x-scale*.23f,bodyTop+scale*.08f),Size(scale*.46f,scale*.13f),CornerRadius(scale*.05f))
     }
 
-    // Jointed arms: shoulder -> elbow -> hand, animated by state.
     val leftElbow = Offset(q.x-scale*.49f, bodyTop+scale*(.30f-handLift*.35f) + talk*scale*.035f)
     val rightElbow = Offset(q.x+scale*.49f, bodyTop+scale*(.30f-handLift*.35f) - talk*scale*.035f)
     val leftHand = Offset(q.x-scale*.52f, bodyTop+scale*(.49f-handLift))
@@ -129,23 +129,31 @@ private fun DrawScope.drawNpcSprite(p: Offset, scale: Float, type: NpcType, faci
     }
 }
 
-private fun DrawScope.drawNpcHair(center: Offset,r:Float,type:NpcType,c:NpcPalette,outline:Color){
+private fun DrawScope.drawNpcHair(center:Offset,r:Float,type:NpcType,c:NpcPalette,outline:Color){
     when(type){
-        NpcType.WAITER->{val path=Path().apply{moveTo(center.x-r*.88f,center.y-r*.15f);lineTo(center.x-r*.68f,center.y-r*.72f);lineTo(center.x,center.y-r*.95f);lineTo(center.x+r*.72f,center.y-r*.68f);lineTo(center.x+r*.88f,center.y-r*.16f);lineTo(center.x+r*.52f,center.y-r*.24f);lineTo(center.x+r*.20f,center.y-r*.06f);lineTo(center.x-r*.12f,center.y-r*.25f);lineTo(center.x-r*.45f,center.y-r*.06f);close()};drawPath(path,c.hair);drawPath(Path().apply{moveTo(center.x-r*.68f,center.y-r*.72f);lineTo(center.x,center.y-r*.95f);lineTo(center.x+r*.05f,center.y-r*.08f);lineTo(center.x-r*.45f,center.y-r*.06f);close()},c.hairLight)}
-        NpcType.CHEF->Unit
-        NpcType.GUEST_CLASSIC->{drawRoundRect(c.hair,Offset(center.x-r*.88f,center.y-r*.25f),Size(r*1.76f,r*.48f),CornerRadius(r*.12f));drawPath(Path().apply{moveTo(center.x-r*.72f,center.y-r*.32f);lineTo(center.x-r*.30f,center.y-r*.80f);lineTo(center.x+r*.38f,center.y-r*.72f);lineTo(center.x+r*.78f,center.y-r*.25f);close()},c.hairLight)}
-        NpcType.GUEST_CURLY->{for(i in -4..4)for(j in -1..2)if((i+j)%2==0)drawCircle(c.hair,r*.22f,Offset(center.x+i*r*.18f,center.y-r*.55f+j*r*.13f));drawCircle(c.hairLight,r*.10f,Offset(center.x-r*.32f,center.y-r*.72f));drawCircle(c.hairLight,r*.10f,Offset(center.x+r*.30f,center.y-r*.65f))}
-        NpcType.GUEST_CAP->Unit
+        NpcType.WAITER -> { drawRoundRect(c.hair,Offset(center.x-r*.82f,center.y-r*.77f),Size(r*1.64f,r*.42f),CornerRadius(r*.10f)); drawRoundRect(c.hairLight,Offset(center.x-r*.55f,center.y-r*.73f),Size(r*.65f,r*.16f),CornerRadius(r*.06f)) }
+        NpcType.CHEF -> drawRoundRect(c.hair,Offset(center.x-r*.78f,center.y-r*.70f),Size(r*1.56f,r*.35f),CornerRadius(r*.10f))
+        NpcType.GUEST_CLASSIC -> { drawRoundRect(c.hair,Offset(center.x-r*.88f,center.y-r*.25f),Size(r*1.76f,r*.48f),CornerRadius(r*.12f)); drawPath(Path().apply{moveTo(center.x-r*.72f,center.y-r*.32f);lineTo(center.x-r*.30f,center.y-r*.80f);lineTo(center.x+r*.38f,center.y-r*.72f);lineTo(center.x+r*.78f,center.y-r*.25f);close()},c.hairLight) }
+        NpcType.GUEST_CURLY -> { for(i in -4..4) for(j in -1..2) if((i+j)%2==0) drawCircle(c.hair,r*.22f,Offset(center.x+i*r*.18f,center.y-r*.55f+j*r*.13f)); drawCircle(c.hairLight,r*.10f,Offset(center.x-r*.32f,center.y-r*.72f)); drawCircle(c.hairLight,r*.10f,Offset(center.x+r*.30f,center.y-r*.65f)) }
+        NpcType.GUEST_CAP -> drawRoundRect(c.hair,Offset(center.x-r*.72f,center.y-r*.22f),Size(r*1.44f,r*.36f),CornerRadius(r*.10f))
     }
 }
 
 private fun DrawScope.drawNpcFace(center:Offset,r:Float,c:NpcPalette,facing:Int,anim:NpcAnim){
-    val eyeY=center.y-r*.03f; val eyeOffset=r*.29f; val blink=if((NpcAnimationClock.tick/120L)%19L==0L) .035f else .24f
-    drawRoundRect(Color(0xFFF8F4EA),Offset(center.x-eyeOffset-r*.17f,eyeY-r*.12f),Size(r*.30f,blink),CornerRadius(r*.08f));drawRoundRect(Color(0xFFF8F4EA),Offset(center.x+eyeOffset-r*.13f,eyeY-r*.12f),Size(r*.30f,blink),CornerRadius(r*.08f))
-    if(blink>.1f){drawCircle(c.hairShade,r*.075f,Offset(center.x-eyeOffset+facing*r*.04f,eyeY));drawCircle(c.hairShade,r*.075f,Offset(center.x+eyeOffset+facing*r*.04f,eyeY));drawCircle(Color.White.copy(alpha=.85f),r*.024f,Offset(center.x-eyeOffset+facing*r*.06f,eyeY-r*.025f));drawCircle(Color.White.copy(alpha=.85f),r*.024f,Offset(center.x+eyeOffset+facing*r*.06f,eyeY-r*.025f))}
+    val eyeY=center.y-r*.03f; val eo=r*.29f
+    val blink=((NpcAnimationClock.tick/1000L)%7L)==0L
+    if(blink){
+        drawLine(c.hairShade,Offset(center.x-eo,eyeY),Offset(center.x-eo+r*.16f,eyeY),r*.035f,StrokeCap.Round)
+        drawLine(c.hairShade,Offset(center.x+eo-r*.16f,eyeY),Offset(center.x+eo,eyeY),r*.035f,StrokeCap.Round)
+    } else {
+        drawRoundRect(Color(0xFFF8F4EA),Offset(center.x-eo-r*.17f,eyeY-r*.12f),Size(r*.30f,r*.24f),CornerRadius(r*.08f))
+        drawRoundRect(Color(0xFFF8F4EA),Offset(center.x+eo-r*.13f,eyeY-r*.12f),Size(r*.30f,r*.24f),CornerRadius(r*.08f))
+        drawCircle(c.hairShade,r*.075f,Offset(center.x-eo+facing*r*.04f,eyeY)); drawCircle(c.hairShade,r*.075f,Offset(center.x+eo+facing*r*.04f,eyeY))
+        drawCircle(Color.White.copy(alpha=.85f),r*.024f,Offset(center.x-eo+facing*r*.06f,eyeY-r*.025f)); drawCircle(Color.White.copy(alpha=.85f),r*.024f,Offset(center.x+eo+facing*r*.06f,eyeY-r*.025f))
+    }
     val browDrop=if(anim==NpcAnim.SAD) r*.10f else -r*.19f
-    drawLine(c.hairShade,Offset(center.x-eyeOffset-r*.11f,eyeY+browDrop),Offset(center.x-eyeOffset+r*.10f,eyeY+browDrop-r*.02f),r*.035f,StrokeCap.Round)
-    drawLine(c.hairShade,Offset(center.x+eyeOffset-r*.10f,eyeY+browDrop-r*.02f),Offset(center.x+eyeOffset+r*.11f,eyeY+browDrop),r*.035f,StrokeCap.Round)
+    drawLine(c.hairShade,Offset(center.x-eo-r*.11f,eyeY+browDrop),Offset(center.x-eo+r*.10f,eyeY+browDrop-r*.02f),r*.035f,StrokeCap.Round)
+    drawLine(c.hairShade,Offset(center.x+eo-r*.10f,eyeY+browDrop-r*.02f),Offset(center.x+eo+r*.11f,eyeY+browDrop),r*.035f,StrokeCap.Round)
     drawLine(c.skinShade,Offset(center.x+facing*r*.05f,eyeY+r*.08f),Offset(center.x+facing*r*.10f,eyeY+r*.19f),r*.035f,StrokeCap.Round)
     val smile=if(anim==NpcAnim.SAD) -1f else 1f
     drawArc(Color(0xFF9E4E50),if(smile>0)12f else 192f,156f,false,Offset(center.x-r*.18f,eyeY+r*.18f),Size(r*.36f,r*.22f),style=Stroke(width=r*.045f))
@@ -153,11 +161,10 @@ private fun DrawScope.drawNpcFace(center:Offset,r:Float,c:NpcPalette,facing:Int,
 
 private fun DrawScope.drawChefHat(center:Offset,r:Float,c:NpcPalette,outline:Color){drawRoundRect(outline,Offset(center.x-r*.50f,center.y-r*1.05f),Size(r,r*.34f),CornerRadius(r*.08f));drawRoundRect(c.top,Offset(center.x-r*.45f,center.y-r*1.02f),Size(r*.90f,r*.25f),CornerRadius(r*.07f));drawCircle(c.top,r*.25f,center+Offset(-r*.25f,-r*1.02f));drawCircle(c.topLight,r*.23f,center+Offset(r*.10f,-r*1.08f));drawCircle(c.topShade,r*.20f,center+Offset(r*.32f,-r*.96f))}
 private fun DrawScope.drawCap(center:Offset,r:Float,c:NpcPalette,outline:Color){drawPath(Path().apply{moveTo(center.x-r*.72f,center.y-r*.48f);lineTo(center.x-r*.30f,center.y-r*.90f);lineTo(center.x+r*.52f,center.y-r*.68f);lineTo(center.x+r*.72f,center.y-r*.42f);close()},outline);drawPath(Path().apply{moveTo(center.x-r*.62f,center.y-r*.50f);lineTo(center.x-r*.25f,center.y-r*.82f);lineTo(center.x+r*.44f,center.y-r*.62f);lineTo(center.x+r*.62f,center.y-r*.45f);close()},c.hair);drawLine(c.hairLight,Offset(center.x-r*.25f,center.y-r*.72f),Offset(center.x+r*.35f,center.y-r*.57f),r*.06f,StrokeCap.Round)}
-private fun DrawScope.drawTray(p:Offset,r:Float,accent:Color){drawOval(Color.Black.copy(alpha=.25f),Offset(p.x-r,p.y-r*.35f),Size(r*2f,r*.70f));drawOval(accent,Offset(p.x-r*.82f,p.y-r*.30f),Size(r*1.64f,r*.50f));drawCircle(Cream,r*.18f,p-Offset(r*.25f,r*.05f));drawCircle(Color(0xFFF0C47A),r*.13f,p+Offset(r*.24f,r*.02f))}
-private fun DrawScope.drawEmotion(p:Offset,text:String,color:Color,size:Float){drawCircle(Color(0xFF071617).copy(alpha=.86f),size, p);drawCircle(color.copy(alpha=.18f),size*.82f,p);drawRoundRect(color,Offset(p.x-size*.08f,p.y-size*.42f),Size(size*.16f,size*.56f),CornerRadius(size*.05f));drawCircle(color,size*.10f,Offset(p.x,p.y+size*.27f))}
+private fun DrawScope.drawTray(p:Offset,r:Float,accent:Color){drawOval(Color.Black.copy(alpha=.25f),Offset(p.x-r,p.y-r*.30f),Size(r*2f,r*.65f));drawOval(accent,Offset(p.x-r*.82f,p.y-r*.28f),Size(r*1.64f,r*.48f));drawCircle(Cream,r*.17f,p-Offset(r*.25f,r*.05f));drawCircle(Color(0xFFF0C47A),r*.13f,p+Offset(r*.24f,r*.02f))}
+private fun DrawScope.drawEmotion(p:Offset,text:String,color:Color,size:Float){drawCircle(Color(0xFF071617).copy(alpha=.86f),size,p);drawCircle(color.copy(alpha=.18f),size*.82f,p);drawRoundRect(color,Offset(p.x-size*.08f,p.y-size*.42f),Size(size*.16f,size*.56f),CornerRadius(size*.05f));drawCircle(color,size*.10f,Offset(p.x,p.y+size*.27f))}
 
-// Stage 4: animated cast. The clock is a Compose snapshot state, so the Canvas redraws at ~30 FPS.
-private fun DrawScope.drawCafeNpcCast(center:(Float,Float)->Offset,w:Float){
+internal fun DrawScope.drawCafeNpcCast(center:(Float,Float)->Offset,w:Float){
     val t=NpcAnimationClock.tick/1000f
     drawNpcSprite(center(7.2f,5.2f),w*.19f,NpcType.WAITER,1,t,NpcAnim.WALK)
     drawNpcSprite(center(2.8f,2.7f),w*.19f,NpcType.CHEF,1,t*.7f,NpcAnim.WAIT)
