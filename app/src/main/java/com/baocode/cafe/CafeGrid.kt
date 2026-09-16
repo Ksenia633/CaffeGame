@@ -27,6 +27,8 @@ data class CafeGrid5(val width: Int = 14, val height: Int = 10, val cells: List<
     fun withOccupied(c: Int, r: Int, value: Boolean): CafeGrid5 = copy(cells = cells.map { if (it.col == c && it.row == r) it.copy(occupied = value) else it })
 }
 
+data class Pos3(val c: Int, val r: Int)
+
 fun defaultCafeGrid5(): CafeGrid5 {
     val cells = MutableList(14 * 10) { i -> CafeCell5(i % 14, i / 14) }
     fun put(c: Int, r: Int, type: CellType5, objectId: String? = null) {
