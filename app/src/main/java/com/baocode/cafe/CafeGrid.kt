@@ -27,7 +27,7 @@ data class CafeGrid5(val width: Int = 14, val height: Int = 10, val cells: List<
     fun withOccupied(c: Int, r: Int, value: Boolean): CafeGrid5 = copy(cells = cells.map { if (it.col == c && it.row == r) it.copy(occupied = value) else it })
 }
 
-data class Pos3(val c: Int, val r: Int)
+data class GridPos5(val c: Int, val r: Int)
 
 fun defaultCafeGrid5(): CafeGrid5 {
     val cells = MutableList(14 * 10) { i -> CafeCell5(i % 14, i / 14) }
@@ -51,7 +51,7 @@ fun defaultCafeGrid5(): CafeGrid5 {
 }
 
 /** Shortest walk through passable cells. Diagonals are deliberately disabled for tile-authentic motion. */
-fun findCafePath5(grid: CafeGrid5, fromC: Int, fromR: Int, toC: Int, toR: Int): List<Pos3> {
+fun findCafePath5(grid: CafeGrid5, fromC: Int, fromR: Int, toC: Int, toR: Int): List<GridPos5> {
     if (!grid.isWalkable(toC, toR) && !(fromC == toC && fromR == toR)) return emptyList()
     data class Node(val c: Int, val r: Int)
     val start = Node(fromC, fromR)
@@ -72,7 +72,7 @@ fun findCafePath5(grid: CafeGrid5, fromC: Int, fromR: Int, toC: Int, toR: Int): 
         }
     }
     if (goal !in parent) return emptyList()
-    val path = mutableListOf<Pos3>(); var cur: Node? = goal
-    while (cur != null) { path += Pos3(cur.c, cur.r); cur = parent[cur] }
+    val path = mutableListOf<GridPos5>(); var cur: Node? = goal
+    while (cur != null) { path += GridPos5(cur.c, cur.r); cur = parent[cur] }
     return path.asReversed().drop(1)
 }
