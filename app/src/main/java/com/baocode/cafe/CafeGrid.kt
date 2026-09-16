@@ -1,6 +1,6 @@
 package com.baocode.cafe
 
-/** Logical map used by the isometric renderer and character pathing. */
+/** Logical 2D tile map: the renderer is deliberately orthogonal, like a classic farming/life sim. */
 enum class CellType5 { FLOOR, TABLE, CHAIR, COUNTER, KITCHEN, WALL, DOOR, PLANT }
 
 data class CafeCell5(
@@ -35,22 +35,34 @@ fun defaultCafeGrid5(): CafeGrid5 {
         if (c !in 0..13 || r !in 0..9) return
         cells[r * 14 + c] = CafeCell5(c, r, type, type == CellType5.FLOOR || type == CellType5.DOOR, objectId = objectId)
     }
-    for (c in 0..13) put(c, 0, CellType5.WALL, "wall_top")
-    for (r in 1..9) put(0, r, CellType5.WALL, "wall_left")
+
+    // Solid room shell, with a single entrance on the right wall.
+    for (c in 0..13) { put(c, 0, CellType5.WALL, "wall_top"); put(c, 9, CellType5.WALL, "wall_bottom") }
+    for (r in 1..8) { put(0, r, CellType5.WALL, "wall_left"); put(13, r, CellType5.WALL, "wall_right") }
     put(13, 5, CellType5.DOOR, "entrance")
+
+    // Service area.
     put(2, 2, CellType5.KITCHEN, "kitchen")
+    put(3, 2, CellType5.KITCHEN, "kitchen_2")
     put(4, 2, CellType5.COUNTER, "cashier")
-    put(9, 2, CellType5.TABLE, "table_guest")
-    put(11, 5, CellType5.TABLE, "table_window")
+    put(5, 2, CellType5.COUNTER, "counter_pastry")
+
+    // Guest seating.
+    put(8, 3, CellType5.TABLE, "table_window")
+    put(10, 5, CellType5.TABLE, "table_guest")
     put(6, 7, CellType5.TABLE, "table_center")
-    put(9, 3, CellType5.CHAIR, "chair_guest")
-    put(11, 6, CellType5.CHAIR, "chair_window")
+    put(8, 4, CellType5.CHAIR, "chair_window")
+    put(10, 6, CellType5.CHAIR, "chair_guest")
     put(6, 8, CellType5.CHAIR, "chair_center")
-    put(12, 3, CellType5.PLANT, "plant_1")
+
+    // Greenery and small décor anchors.
+    put(11, 2, CellType5.PLANT, "plant_window")
+    put(2, 6, CellType5.PLANT, "plant_left")
+    put(12, 7, CellType5.PLANT, "plant_door")
     return CafeGrid5(cells = cells)
 }
 
-/** Shortest walk through passable cells. Diagonals are deliberately disabled for tile-authentic motion. */
+/** Shortest orthogonal tile path. Diagonals are intentionally disabled for readable grid movement. */
 fun findCafePath5(grid: CafeGrid5, fromC: Int, fromR: Int, toC: Int, toR: Int): List<GridPos5> {
     if (!grid.isWalkable(toC, toR) && !(fromC == toC && fromR == toR)) return emptyList()
     data class Node(val c: Int, val r: Int)
