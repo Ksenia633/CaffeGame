@@ -8,7 +8,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -45,6 +47,7 @@ private val Mint = Color(0xFF5D9B80)
 private val DarkPanel = Color(0xFF27272B)
 private val Terminal = Color(0xFF1C2B2C)
 private val Grid = Color(0xFF6BD1BF)
+private val PanelBg = Color(0xEE252A2B)
 private data class Command(val id: String, val source: String, val label: String)
 
 private val commands = listOf(
@@ -123,19 +126,144 @@ private fun BaoCodeGame() {
 
     Box(Modifier.fillMaxSize().background(Terminal)) {
         CafeWorld(hero, currentTarget)
-        Text("ЗАКАЗ: 2 × бао", color = Ink, fontSize = 11.sp, fontWeight = FontWeight.Bold,
-            modifier = Modifier.align(BiasAlignment(.08f, -.22f)).clip(RoundedCornerShape(7.dp)).background(Cream).padding(horizontal = 7.dp, vertical = 4.dp))
-        Text(action, color = Color.White, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center,
-            modifier = Modifier.align(BiasAlignment(.10f, .35f)).clip(RoundedCornerShape(12.dp)).background(Terminal.copy(alpha = .91f)).padding(horizontal = 12.dp, vertical = 6.dp))
-        CodeDock(program, available, isRunning, { program = program + it }, { command -> program = program.filterNot { it.id == command.id } }, { isRunning = true },
-            Modifier.align(Alignment.BottomStart).padding(12.dp).fillMaxWidth(.42f).height(230.dp))
-        Surface(color = Terminal.copy(alpha = .94f), shape = RoundedCornerShape(10.dp), modifier = Modifier.align(Alignment.TopEnd).padding(12.dp).width(178.dp).border(1.dp, Grid.copy(alpha = .8f), RoundedCornerShape(10.dp))) {
-            Column(Modifier.padding(9.dp)) {
-                Text("16.09.2026  ·  19:43", color = Cream, fontFamily = FontFamily.Monospace, fontSize = 12.sp)
-                Text("ТОКИО, ЯПОНИЯ", color = Grid, fontFamily = FontFamily.Monospace, fontSize = 11.sp)
-                Text("☔  Дождь  ·  +18°C", color = Cream, fontSize = 12.sp)
-                Spacer(Modifier.height(8.dp))
-                Text("Доставлено: $served", color = Color(0xFFFFD38F), fontWeight = FontWeight.Bold, fontSize = 11.sp)
+
+        // Левая вертикальная панель: код + варианты. Она не накрывает большую часть сцены.
+        Column(
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(start = 10.dp, top = 10.dp, bottom = 10.dp)
+                .fillMaxHeight(.96f)
+                .fillMaxWidth(.27f),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            ProgramPanel(
+                program = program,
+                running = isRunning,
+                onRemove = { command -> program = program.filterNot { it.id == command.id } },
+                modifier = Modifier.weight(1.1f).fillMaxWidth()
+            )
+            CommandsPanel(
+                available = available,
+                running = isRunning,
+                onAdd = { command -> program = program + command },
+                onRun = { isRunning = true },
+                modifier = Modifier.weight(.9f).fillMaxWidth()
+            )
+        }
+
+        // Справа сверху только маленькое информационное окно.
+        Surface(
+            color = PanelBg,
+            shape = RoundedCornerShape(9.dp),
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(10.dp)
+                .width(154.dp)
+                .border(1.dp, Grid.copy(alpha = .65f), RoundedCornerShape(9.dp))
+        ) {
+            Column(Modifier.padding(horizontal = 9.dp, vertical = 7.dp)) {
+                Text("16.09.2026  ·  19:43", color = Cream, fontFamily = FontFamily.Monospace, fontSize = 10.sp)
+                Text("ТОКИО, ЯПОНИЯ", color = Grid, fontFamily = FontFamily.Monospace, fontSize = 9.sp)
+                Text("☔  +18°C  ·  Дождь", color = Cream, fontSize = 10.sp)
+            }
+        }
+
+        Text(
+            text = action,
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            fontSize = 11.sp,
+            modifier = Modifier
+                .align(BiasAlignment(.12f, .32f))
+                .clip(RoundedCornerShape(10.dp))
+                .background(Terminal.copy(alpha = .86f))
+                .padding(horizontal = 9.dp, vertical = 5.dp)
+        )
+    }
+}
+
+@Composable
+private fun ProgramPanel(
+    program: List<Command>,
+    running: Boolean,
+    onRemove: (Command) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        color = PanelBg,
+        shape = RoundedCornerShape(10.dp),
+        modifier = modifier.border(1.dp, Grid.copy(alpha = .55f), RoundedCornerShape(10.dp))
+    ) {
+        Column(Modifier.fillMaxSize().padding(8.dp)) {
+            Text("// КОД", color = Grid, fontSize = 10.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(5.dp))
+            Box(
+                Modifier.fillMaxSize().clip(RoundedCornerShape(6.dp)).background(Color(0xFF101617)).padding(7.dp)
+            ) {
+                if (program.isEmpty()) {
+                    Text("Добавляй команды\nснизу", color = Color(0xFF8EA09F), fontFamily = FontFamily.Monospace, fontSize = 10.sp)
+                } else {
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        program.forEachIndexed { index, command ->
+                            Text(
+                                text = "${index + 1}. ${command.source}",
+                                color = if (running) Color(0xFF7F8D8B) else Color(0xFFFFD38F),
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 9.sp,
+                                modifier = Modifier.clickable(enabled = !running) { onRemove(command) }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CommandsPanel(
+    available: List<Command>,
+    running: Boolean,
+    onAdd: (Command) -> Unit,
+    onRun: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        color = PanelBg,
+        shape = RoundedCornerShape(10.dp),
+        modifier = modifier.border(1.dp, Grid.copy(alpha = .55f), RoundedCornerShape(10.dp))
+    ) {
+        Column(Modifier.fillMaxSize().padding(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                Text("// КОМАНДЫ", color = Grid, fontSize = 10.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
+                Button(
+                    onClick = onRun,
+                    enabled = !running && available.size < commands.size,
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Grid, contentColor = Terminal),
+                    modifier = Modifier.height(28.dp)
+                ) { Text("▶", fontSize = 11.sp, fontWeight = FontWeight.Black) }
+            }
+            Spacer(Modifier.height(5.dp))
+            Column(
+                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(5.dp)
+            ) {
+                available.forEach { command ->
+                    Surface(
+                        color = Cream,
+                        shape = RoundedCornerShape(6.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(enabled = !running) { onAdd(command) }
+                    ) {
+                        Column(Modifier.padding(horizontal = 7.dp, vertical = 5.dp)) {
+                            Text(command.source, color = Ink, fontFamily = FontFamily.Monospace, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                            Text(command.label, color = Ink.copy(alpha = .65f), fontSize = 8.sp, maxLines = 1)
+                        }
+                    }
+                }
             }
         }
     }
@@ -162,7 +290,9 @@ private fun CafeWorld(hero: HeroState, target: Target?) {
             drawTargetMarker(p.x, p.y)
         }
         drawHero(size.width * hero.x, size.height * hero.y, hero.facing, hero.moving, hero.hasOrder, hero.hasBao)
-        for (y in 0 until size.height.toInt() step 5) drawLine(Color(0xFFB1FFF1).copy(alpha = .025f), Offset(0f, y.toFloat()), Offset(size.width, y.toFloat()))
+        for (y in 0 until size.height.toInt() step 5) {
+            drawLine(Color(0xFFB1FFF1).copy(alpha = .025f), Offset(0f, y.toFloat()), Offset(size.width, y.toFloat()))
+        }
     }
 }
 
@@ -260,28 +390,4 @@ private fun DrawScope.drawSpeechBubble(x: Float, y: Float) {
     drawRoundRect(Color(0xFFF8F4E8), Offset(x - 22.dp.toPx(), y - 14.dp.toPx()), Size(44.dp.toPx(), 27.dp.toPx()), CornerRadius(8.dp.toPx()))
     drawCircle(Coral, 4.dp.toPx(), Offset(x - 7.dp.toPx(), y - 1.dp.toPx()))
     drawCircle(Coral, 4.dp.toPx(), Offset(x + 7.dp.toPx(), y - 1.dp.toPx()))
-}
-
-@Composable
-private fun CodeDock(program: List<Command>, available: List<Command>, running: Boolean, onAdd: (Command) -> Unit, onRemove: (Command) -> Unit, onRun: () -> Unit, modifier: Modifier = Modifier) {
-    Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Surface(color = DarkPanel.copy(alpha = .98f), shape = RoundedCornerShape(12.dp), modifier = Modifier.weight(1.35f).fillMaxWidth().border(1.dp, Grid.copy(alpha = .75f), RoundedCornerShape(12.dp))) {
-            Column(Modifier.fillMaxSize().padding(10.dp)) {
-                Text("// ТВОЙ КОД", color = Grid, fontSize = 12.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Black)
-                Box(Modifier.weight(1f).fillMaxWidth().padding(top = 5.dp).clip(RoundedCornerShape(6.dp)).background(Color(0xFF101719)).padding(8.dp)) {
-                    if (program.isEmpty()) Text("// Выбери строку снизу", color = Color(0xFF98AAA9), fontFamily = FontFamily.Monospace, fontSize = 12.sp)
-                    else Column { program.forEachIndexed { index, command -> Text("${index + 1}. ${command.source}", color = Color(0xFFFFD38F), fontFamily = FontFamily.Monospace, fontSize = 11.sp, modifier = Modifier.clickable(enabled = !running) { onRemove(command) }) } }
-                }
-            }
-        }
-        Surface(color = DarkPanel.copy(alpha = .98f), shape = RoundedCornerShape(12.dp), modifier = Modifier.weight(.8f).fillMaxWidth().border(1.dp, Grid.copy(alpha = .75f), RoundedCornerShape(12.dp))) {
-            Column(Modifier.fillMaxSize().padding(8.dp)) {
-                Text("// ВСТАВИТЬ КОМАНДУ", color = Grid, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
-                Row(Modifier.weight(1f).fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    available.take(4).forEach { command -> Text(command.source, color = Ink, fontFamily = FontFamily.Monospace, fontSize = 9.sp, modifier = Modifier.weight(1f).fillMaxHeight().clip(RoundedCornerShape(5.dp)).background(Cream).clickable(enabled = !running) { onAdd(command) }.padding(4.dp)) }
-                    Button(onClick = onRun, enabled = program.isNotEmpty() && !running, colors = ButtonDefaults.buttonColors(containerColor = Grid, contentColor = Terminal), modifier = Modifier.width(50.dp).fillMaxHeight()) { Text("▶", fontWeight = FontWeight.Black) }
-                }
-            }
-        }
-    }
 }
