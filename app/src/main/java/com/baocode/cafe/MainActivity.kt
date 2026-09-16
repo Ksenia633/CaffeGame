@@ -330,33 +330,34 @@ private fun DrawScope.drawCounter(xNorm: Float, yNorm: Float, color: Color) {
 private fun DrawScope.drawKitchen(xNorm: Float, yNorm: Float) {
     val x = size.width * xNorm; val y = size.height * yNorm
     drawRoundRect(Color(0xFFE0AF6B), Offset(x - 40.dp.toPx(), y - 22.dp.toPx()), Size(80.dp.toPx(), 38.dp.toPx()), CornerRadius(9.dp.toPx()))
-    drawRoundRect(Color(0xFF8D5935), Offset(x - 28.dp.toPx(), y - 8.dp.toPx()), Size(56.dp.toPx(), 13.dp.toPx()), CornerRadius(5.dp.toPx()))
-    drawCircle(Color(0xFFFFF4C8), 8.dp.toPx(), Offset(x, y - 3.dp.toPx()))
+    drawRoundRect(Color(0xFF8D5935), Offset(x - 28.dp.toPx(), y - 11.dp.toPx()), Size(56.dp.toPx(), 12.dp.toPx()), CornerRadius(4.dp.toPx()))
+    drawCircle(Color(0xFF7B8584), 7.dp.toPx(), Offset(x - 17.dp.toPx(), y + 1.dp.toPx()))
+    drawCircle(Color(0xFF7B8584), 7.dp.toPx(), Offset(x + 3.dp.toPx(), y + 1.dp.toPx()))
+    drawCircle(Color(0xFFFFE4A8), 5.dp.toPx(), Offset(x + 22.dp.toPx(), y - 3.dp.toPx()))
 }
 
 private fun DrawScope.drawTable(xNorm: Float, yNorm: Float) {
     val x = size.width * xNorm; val y = size.height * yNorm
-    drawCircle(Color(0xFF6F4A3E), 34.dp.toPx(), Offset(x, y))
-    drawCircle(Color(0xFFC78963), 28.dp.toPx(), Offset(x, y))
-    drawCircle(Color(0xFFFFE1B8), 7.dp.toPx(), Offset(x - 11.dp.toPx(), y - 3.dp.toPx()))
-    drawCircle(Color(0xFFFFE1B8), 7.dp.toPx(), Offset(x + 11.dp.toPx(), y + 1.dp.toPx()))
+    drawCircle(Color(0xFFB87A4B), 34.dp.toPx(), Offset(x, y))
+    drawCircle(Color(0xFF5A3D2E), 29.dp.toPx(), Offset(x, y), style = Stroke(2.dp.toPx()))
+    drawCircle(Color(0xFFD6A16B), 4.dp.toPx(), Offset(x, y))
 }
 
 private fun DrawScope.drawGuest(xNorm: Float, yNorm: Float) {
     val x = size.width * xNorm; val y = size.height * yNorm
-    drawCircle(Color(0xFFFDE3C4), 9.dp.toPx(), Offset(x, y))
-    drawCircle(Coral, 13.dp.toPx(), Offset(x, y + 18.dp.toPx()))
-    drawCircle(Terminal, 2.dp.toPx(), Offset(x - 3.dp.toPx(), y - 1.dp.toPx()))
-    drawCircle(Terminal, 2.dp.toPx(), Offset(x + 3.dp.toPx(), y - 1.dp.toPx()))
-    drawSpeechBubble(x + 32.dp.toPx(), y - 4.dp.toPx())
+    drawCircle(Color(0xFFFFD0A3), 9.dp.toPx(), Offset(x, y - 17.dp.toPx()))
+    drawRoundRect(Color(0xFFB65C55), Offset(x - 11.dp.toPx(), y - 8.dp.toPx()), Size(22.dp.toPx(), 25.dp.toPx()), CornerRadius(7.dp.toPx()))
+    drawCircle(Terminal, 1.7.dp.toPx(), Offset(x - 3.dp.toPx(), y - 18.dp.toPx()))
+    drawCircle(Terminal, 1.7.dp.toPx(), Offset(x + 3.dp.toPx(), y - 18.dp.toPx()))
+    drawSpeechBubble(x - 20.dp.toPx(), y - 40.dp.toPx())
 }
 
 private fun DrawScope.drawPlant(xNorm: Float, yNorm: Float) {
     val x = size.width * xNorm; val y = size.height * yNorm
-    drawRoundRect(Color(0xFFA76B4D), Offset(x - 12.dp.toPx(), y + 2.dp.toPx()), Size(24.dp.toPx(), 19.dp.toPx()), CornerRadius(6.dp.toPx()))
-    drawCircle(Mint, 13.dp.toPx(), Offset(x, y - 8.dp.toPx()))
-    drawCircle(Color(0xFF7FB097), 10.dp.toPx(), Offset(x - 9.dp.toPx(), y - 6.dp.toPx()))
-    drawCircle(Color(0xFF7FB097), 10.dp.toPx(), Offset(x + 9.dp.toPx(), y - 6.dp.toPx()))
+    drawRoundRect(Color(0xFFB36A45), Offset(x - 14.dp.toPx(), y, ), Size(28.dp.toPx(), 22.dp.toPx()), CornerRadius(5.dp.toPx()))
+    drawCircle(Mint, 13.dp.toPx(), Offset(x - 10.dp.toPx(), y - 15.dp.toPx()))
+    drawCircle(Mint, 14.dp.toPx(), Offset(x + 7.dp.toPx(), y - 18.dp.toPx()))
+    drawCircle(Color(0xFF77B58F), 10.dp.toPx(), Offset(x + 18.dp.toPx(), y - 11.dp.toPx()))
 }
 
 private fun DrawScope.drawDoor(xNorm: Float, yNorm: Float) {
@@ -373,7 +374,7 @@ private fun DrawScope.drawTargetMarker(xNorm: Float, yNorm: Float) {
 }
 
 private fun DrawScope.drawHero(x: Float, y: Float, facing: Float, moving: Boolean, hasOrder: Boolean, hasBao: Boolean) {
-    val bob = if (moving) sin(System.currentTimeMillis() / 85.0) * 2.5f else 0f
+    val bob = if (moving) sin(System.currentTimeMillis() / 85.0).toFloat() * 2.5f else 0f
     val yy = y + bob
     val direction = if (cos(facing) >= 0) 1f else -1f
     drawOval(Color.Black.copy(alpha = .32f), Offset(x - 18.dp.toPx(), yy + 17.dp.toPx()), Size(36.dp.toPx(), 9.dp.toPx()))
@@ -388,6 +389,7 @@ private fun DrawScope.drawHero(x: Float, y: Float, facing: Float, moving: Boolea
 
 private fun DrawScope.drawSpeechBubble(x: Float, y: Float) {
     drawRoundRect(Color(0xFFF8F4E8), Offset(x - 22.dp.toPx(), y - 14.dp.toPx()), Size(44.dp.toPx(), 27.dp.toPx()), CornerRadius(8.dp.toPx()))
-    drawCircle(Coral, 4.dp.toPx(), Offset(x - 7.dp.toPx(), y - 1.dp.toPx()))
-    drawCircle(Coral, 4.dp.toPx(), Offset(x + 7.dp.toPx(), y - 1.dp.toPx()))
+    drawCircle(Coral, 3.dp.toPx(), Offset(x - 8.dp.toPx(), y))
+    drawCircle(Coral, 3.dp.toPx(), Offset(x, y))
+    drawCircle(Coral, 3.dp.toPx(), Offset(x + 8.dp.toPx(), y))
 }
