@@ -398,21 +398,165 @@ private fun DrawScope.drawGuestSprite(p: Offset, scale: Float) {
 }
 
 private fun DrawScope.drawHeroSprite(p: Offset, scale: Float, facing: Int, moving: Boolean, hasOrder: Boolean, hasBao: Boolean) {
-    val bob = if (moving) ((p.x.toInt() / 3) % 2) * scale * .04f else 0f
+    val bob = if (moving) ((p.x.toInt() / 3) % 2) * scale * .035f else 0f
     val q = p + Offset(0f, bob)
-    drawOval(Color.Black.copy(alpha = .38f), Offset(q.x - scale * .78f, q.y + scale * .53f), Size(scale * 1.56f, scale * .48f))
-    drawIsoBox(q + Offset(0f, scale * .40f), scale * 1.05f, scale * .52f, scale * .72f, Blue, Color(0xFF243E52))
-    drawRoundRect(Color(0xFF151A1A), Offset(q.x - scale * .44f, q.y - scale * .30f), Size(scale * .88f, scale * .20f), CornerRadius(scale * .07f))
-    drawCircle(Color(0xFFFFC995), scale * .42f, q - Offset(0f, scale * .43f))
-    drawRoundRect(Color(0xFF171B1A), Offset(q.x - scale * .46f, q.y - scale * .79f), Size(scale * .92f, scale * .23f), CornerRadius(scale * .09f))
-    drawRect(Color(0xFFECE8DB), Offset(q.x - scale * .40f, q.y - scale * .66f), Size(scale * .80f, scale * .12f))
-    val eyeX = q.x + facing * scale * .17f
-    drawCircle(Color(0xFF272322), scale * .055f, Offset(eyeX - scale * .10f, q.y - scale * .47f))
-    drawCircle(Color(0xFF272322), scale * .055f, Offset(eyeX + scale * .10f, q.y - scale * .47f))
-    drawRoundRect(Color(0xFFE8EFE8), Offset(q.x - scale * .10f, q.y + scale * .18f), Size(scale * .20f, scale * .15f), CornerRadius(scale * .03f))
-    if (hasOrder) drawSpeechIcon(q + Offset(-scale * .66f, -scale * .30f), scale * .35f)
-    if (hasBao) drawBao(q + Offset(scale * .60f, scale * .15f), scale * .23f)
+    val outline = Color(0xFF171719)
+    val skin = Color(0xFFFFC58F)
+    val skinLight = Color(0xFFFFD9AE)
+    val skinShade = Color(0xFFD88963)
+    val hair = Color(0xFF38252A)
+    val hairLight = Color(0xFF5B3840)
+    val hairShade = Color(0xFF241A1D)
+    val shirt = Color(0xFF4F7898)
+    val shirtLight = Color(0xFF7198B2)
+    val shirtShade = Color(0xFF304F68)
+    val pants = Color(0xFF273D4E)
+    val pantsLight = Color(0xFF3F5D70)
+    val shoe = Color(0xFF24282B)
+    val shoeLight = Color(0xFF555D60)
+    val accent = Color(0xFFE8B45E)
+
+    // Ground shadow: keeps the character visually anchored to the isometric floor.
+    drawOval(Color.Black.copy(alpha = .42f), Offset(q.x - scale * .92f, q.y + scale * .62f), Size(scale * 1.84f, scale * .48f))
+
+    // Legs + chunky low-poly shoes: small body, deliberately short proportions.
+    val legY = q.y + scale * .55f
+    drawRoundRect(outline, Offset(q.x - scale * .33f, legY - scale * .02f), Size(scale * .25f, scale * .56f), CornerRadius(scale * .08f))
+    drawRoundRect(outline, Offset(q.x + scale * .08f, legY - scale * .02f), Size(scale * .25f, scale * .56f), CornerRadius(scale * .08f))
+    drawRoundRect(pantsShade(pants, .12f), Offset(q.x - scale * .29f, legY + scale * .01f), Size(scale * .17f, scale * .48f), CornerRadius(scale * .06f))
+    drawRoundRect(pants, Offset(q.x + scale * .12f, legY + scale * .01f), Size(scale * .17f, scale * .48f), CornerRadius(scale * .06f))
+    drawRoundRect(outline, Offset(q.x - scale * .40f, legY + scale * .40f), Size(scale * .38f, scale * .22f), CornerRadius(scale * .09f))
+    drawRoundRect(outline, Offset(q.x + scale * .02f, legY + scale * .40f), Size(scale * .38f, scale * .22f), CornerRadius(scale * .09f))
+    drawRoundRect(shoe, Offset(q.x - scale * .36f, legY + scale * .43f), Size(scale * .31f, scale * .13f), CornerRadius(scale * .06f))
+    drawRoundRect(shoeLight, Offset(q.x + scale * .06f, legY + scale * .43f), Size(scale * .31f, scale * .13f), CornerRadius(scale * .06f))
+    drawLine(Color.White.copy(alpha = .16f), Offset(q.x - scale * .32f, legY + scale * .45f), Offset(q.x - scale * .12f, legY + scale * .45f), 1.4f)
+    drawLine(Color.White.copy(alpha = .16f), Offset(q.x + scale * .10f, legY + scale * .45f), Offset(q.x + scale * .30f, legY + scale * .45f), 1.4f)
+
+    // Torso is wider at the shoulders and narrower at the waist, with visible side facets.
+    val bodyTop = q.y + scale * .02f
+    val torso = Path().apply {
+        moveTo(q.x - scale * .47f, bodyTop + scale * .05f)
+        lineTo(q.x - scale * .33f, bodyTop - scale * .08f)
+        lineTo(q.x + scale * .33f, bodyTop - scale * .08f)
+        lineTo(q.x + scale * .47f, bodyTop + scale * .05f)
+        lineTo(q.x + scale * .34f, bodyTop + scale * .62f)
+        lineTo(q.x - scale * .34f, bodyTop + scale * .62f)
+        close()
+    }
+    drawPath(torso, outline)
+    val shirtFace = Path().apply {
+        moveTo(q.x - scale * .39f, bodyTop + scale * .07f)
+        lineTo(q.x - scale * .27f, bodyTop)
+        lineTo(q.x + scale * .27f, bodyTop)
+        lineTo(q.x + scale * .39f, bodyTop + scale * .07f)
+        lineTo(q.x + scale * .28f, bodyTop + scale * .55f)
+        lineTo(q.x - scale * .28f, bodyTop + scale * .55f)
+        close()
+    }
+    drawPath(shirtFace, shirt)
+    drawPath(Path().apply { moveTo(q.x - scale * .39f, bodyTop + scale * .07f); lineTo(q.x - scale * .27f, bodyTop); lineTo(q.x - scale * .27f, bodyTop + scale * .55f); lineTo(q.x - scale * .39f, bodyTop + scale * .07f); close() }, shirtLight.copy(alpha = .82f))
+    drawPath(Path().apply { moveTo(q.x + scale * .27f, bodyTop); lineTo(q.x + scale * .39f, bodyTop + scale * .07f); lineTo(q.x + scale * .28f, bodyTop + scale * .55f); lineTo(q.x + scale * .27f, bodyTop); close() }, shirtShade)
+
+    // Clothing details: collar, apron stripe and buttons give the material separate identity.
+    drawPath(Path().apply { moveTo(q.x - scale * .18f, bodyTop); lineTo(q.x, bodyTop + scale * .17f); lineTo(q.x + scale * .18f, bodyTop); lineTo(q.x + scale * .11f, bodyTop + scale * .08f); lineTo(q.x, bodyTop + scale * .23f); lineTo(q.x - scale * .11f, bodyTop + scale * .08f); close() }, Cream)
+    drawRoundRect(accent, Offset(q.x - scale * .06f, bodyTop + scale * .18f), Size(scale * .12f, scale * .30f), CornerRadius(scale * .025f))
+    drawCircle(Cream, scale * .028f, Offset(q.x, bodyTop + scale * .31f))
+    drawCircle(Cream, scale * .028f, Offset(q.x, bodyTop + scale * .43f))
+
+    // Arms are separated volumes with a darker underside and visible hands.
+    val armY = bodyTop + scale * .12f
+    drawRoundRect(outline, Offset(q.x - scale * .63f, armY), Size(scale * .25f, scale * .57f), CornerRadius(scale * .11f))
+    drawRoundRect(outline, Offset(q.x + scale * .38f, armY), Size(scale * .25f, scale * .57f), CornerRadius(scale * .11f))
+    drawRoundRect(shirtLight, Offset(q.x - scale * .59f, armY + scale * .02f), Size(scale * .16f, scale * .39f), CornerRadius(scale * .08f))
+    drawRoundRect(shirtShade, Offset(q.x + scale * .42f, armY + scale * .02f), Size(scale * .16f, scale * .39f), CornerRadius(scale * .08f))
+    drawRoundRect(skin, Offset(q.x - scale * .59f, armY + scale * .34f), Size(scale * .16f, scale * .18f), CornerRadius(scale * .07f))
+    drawRoundRect(skinShade, Offset(q.x + scale * .42f, armY + scale * .34f), Size(scale * .16f, scale * .18f), CornerRadius(scale * .07f))
+
+    // Neck and oversized head: roughly 45% of total character height.
+    drawRoundRect(outline, Offset(q.x - scale * .15f, q.y - scale * .30f), Size(scale * .30f, scale * .25f), CornerRadius(scale * .08f))
+    drawRoundRect(skinShade, Offset(q.x - scale * .10f, q.y - scale * .28f), Size(scale * .20f, scale * .20f), CornerRadius(scale * .06f))
+
+    val headCenter = q - Offset(0f, scale * .62f)
+    val headR = scale * .62f
+    // Faceted head silhouette.
+    val headOutline = Path().apply {
+        moveTo(headCenter.x, headCenter.y - headR)
+        lineTo(headCenter.x + headR * .68f, headCenter.y - headR * .72f)
+        lineTo(headCenter.x + headR, headCenter.y - headR * .12f)
+        lineTo(headCenter.x + headR * .82f, headCenter.y + headR * .60f)
+        lineTo(headCenter.x + headR * .30f, headCenter.y + headR)
+        lineTo(headCenter.x - headR * .30f, headCenter.y + headR)
+        lineTo(headCenter.x - headR * .82f, headCenter.y + headR * .60f)
+        lineTo(headCenter.x - headR, headCenter.y - headR * .12f)
+        lineTo(headCenter.x - headR * .68f, headCenter.y - headR * .72f)
+        close()
+    }
+    drawPath(headOutline, outline)
+    val face = Path().apply {
+        moveTo(headCenter.x, headCenter.y - headR * .88f)
+        lineTo(headCenter.x + headR * .58f, headCenter.y - headR * .62f)
+        lineTo(headCenter.x + headR * .84f, headCenter.y - headR * .08f)
+        lineTo(headCenter.x + headR * .68f, headCenter.y + headR * .55f)
+        lineTo(headCenter.x + headR * .24f, headCenter.y + headR * .82f)
+        lineTo(headCenter.x - headR * .30f, headCenter.y + headR * .82f)
+        lineTo(headCenter.x - headR * .68f, headCenter.y + headR * .52f)
+        lineTo(headCenter.x - headR * .84f, headCenter.y - headR * .08f)
+        lineTo(headCenter.x - headR * .58f, headCenter.y - headR * .62f)
+        close()
+    }
+    drawPath(face, skin)
+    drawPath(Path().apply { moveTo(headCenter.x - headR * .84f, headCenter.y - headR * .08f); lineTo(headCenter.x - headR * .58f, headCenter.y - headR * .62f); lineTo(headCenter.x, headCenter.y - headR * .88f); lineTo(headCenter.x - headR * .30f, headCenter.y + headR * .82f); lineTo(headCenter.x - headR * .68f, headCenter.y + headR * .52f); close() }, skinLight.copy(alpha = .88f))
+    drawPath(Path().apply { moveTo(headCenter.x, headCenter.y - headR * .88f); lineTo(headCenter.x + headR * .58f, headCenter.y - headR * .62f); lineTo(headCenter.x + headR * .84f, headCenter.y - headR * .08f); lineTo(headCenter.x + headR * .68f, headCenter.y + headR * .55f); lineTo(headCenter.x + headR * .24f, headCenter.y + headR * .82f); lineTo(headCenter.x, headCenter.y + headR * .20f); close() }, skinShade.copy(alpha = .78f))
+
+    // Hair cap with angular fringe and separate highlight planes.
+    val hairCap = Path().apply {
+        moveTo(headCenter.x - headR * .88f, headCenter.y - headR * .20f)
+        lineTo(headCenter.x - headR * .66f, headCenter.y - headR * .72f)
+        lineTo(headCenter.x - headR * .15f, headCenter.y - headR * .94f)
+        lineTo(headCenter.x + headR * .52f, headCenter.y - headR * .78f)
+        lineTo(headCenter.x + headR * .88f, headCenter.y - headR * .26f)
+        lineTo(headCenter.x + headR * .64f, headCenter.y - headR * .05f)
+        lineTo(headCenter.x + headR * .34f, headCenter.y - headR * .25f)
+        lineTo(headCenter.x + headR * .06f, headCenter.y - headR * .05f)
+        lineTo(headCenter.x - headR * .18f, headCenter.y - headR * .28f)
+        lineTo(headCenter.x - headR * .42f, headCenter.y - headR * .05f)
+        lineTo(headCenter.x - headR * .68f, headCenter.y - headR * .14f)
+        close()
+    }
+    drawPath(hairCap, hair)
+    drawPath(Path().apply { moveTo(headCenter.x - headR * .66f, headCenter.y - headR * .72f); lineTo(headCenter.x - headR * .15f, headCenter.y - headR * .94f); lineTo(headCenter.x + headR * .06f, headCenter.y - headR * .05f); lineTo(headCenter.x - headR * .42f, headCenter.y - headR * .05f); close() }, hairLight)
+    drawPath(Path().apply { moveTo(headCenter.x + headR * .06f, headCenter.y - headR * .05f); lineTo(headCenter.x + headR * .52f, headCenter.y - headR * .78f); lineTo(headCenter.x + headR * .88f, headCenter.y - headR * .26f); lineTo(headCenter.x + headR * .34f, headCenter.y - headR * .25f); close() }, hairShade)
+
+    // Face: large readable eyes, brows, tiny nose and smiling mouth.
+    val eyeY = headCenter.y - headR * .04f
+    val eyeOffset = headR * .29f
+    drawRoundRect(Color(0xFFF8F4EA), Offset(headCenter.x - eyeOffset - headR * .17f, eyeY - headR * .12f), Size(headR * .30f, headR * .24f), CornerRadius(headR * .08f))
+    drawRoundRect(Color(0xFFF8F4EA), Offset(headCenter.x + eyeOffset - headR * .13f, eyeY - headR * .12f), Size(headR * .30f, headR * .24f), CornerRadius(headR * .08f))
+    drawCircle(Color(0xFF332629), headR * .075f, Offset(headCenter.x - eyeOffset + facing * headR * .04f, eyeY))
+    drawCircle(Color(0xFF332629), headR * .075f, Offset(headCenter.x + eyeOffset + facing * headR * .04f, eyeY))
+    drawCircle(Color.White.copy(alpha = .85f), headR * .025f, Offset(headCenter.x - eyeOffset + facing * headR * .06f, eyeY - headR * .025f))
+    drawCircle(Color.White.copy(alpha = .85f), headR * .025f, Offset(headCenter.x + eyeOffset + facing * headR * .06f, eyeY - headR * .025f))
+    drawLine(hairShade, Offset(headCenter.x - eyeOffset - headR * .12f, eyeY - headR * .17f), Offset(headCenter.x - eyeOffset + headR * .10f, eyeY - headR * .19f), headR * .035f, StrokeCap.Round)
+    drawLine(hairShade, Offset(headCenter.x + eyeOffset - headR * .10f, eyeY - headR * .19f), Offset(headCenter.x + eyeOffset + headR * .12f, eyeY - headR * .17f), headR * .035f, StrokeCap.Round)
+    drawLine(skinShade, Offset(headCenter.x + facing * headR * .05f, eyeY + headR * .08f), Offset(headCenter.x + facing * headR * .10f, eyeY + headR * .20f), headR * .035f, StrokeCap.Round)
+    drawArc(Color(0xFF9E4E50), 12f, 156f, false, Offset(headCenter.x - headR * .18f, eyeY + headR * .18f), Size(headR * .36f, headR * .22f), style = Stroke(width = headR * .045f))
+
+    // Small ears with skin material and shade.
+    drawCircle(outline, headR * .17f, Offset(headCenter.x - headR * .88f, headCenter.y + headR * .02f))
+    drawCircle(outline, headR * .17f, Offset(headCenter.x + headR * .88f, headCenter.y + headR * .02f))
+    drawCircle(skinShade, headR * .105f, Offset(headCenter.x - headR * .88f, headCenter.y + headR * .02f))
+    drawCircle(skinShade, headR * .105f, Offset(headCenter.x + headR * .88f, headCenter.y + headR * .02f))
+
+    if (hasOrder) drawSpeechIcon(q + Offset(-scale * .72f, -scale * .40f), scale * .34f)
+    if (hasBao) drawBao(q + Offset(scale * .67f, scale * .12f), scale * .23f)
 }
+
+private fun pantsShade(base: Color, amount: Float): Color = Color(
+    red = max(0f, base.red - amount),
+    green = max(0f, base.green - amount),
+    blue = max(0f, base.blue - amount),
+    alpha = base.alpha
+)
 
 private fun DrawScope.drawSpeechIcon(p: Offset, scale: Float) {
     drawRoundRect(Cream, Offset(p.x - scale, p.y - scale * .62f), Size(scale * 2f, scale * 1.25f), CornerRadius(scale * .25f))
