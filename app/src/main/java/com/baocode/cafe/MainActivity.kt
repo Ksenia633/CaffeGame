@@ -18,9 +18,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Path
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -75,7 +75,6 @@ private val solution = listOf("to_guest", "take", "to_counter", "take_bao", "ret
 
 private enum class TileType { FLOOR, WALL, COUNTER, KITCHEN, TABLE, CHAIR, PLANT, DOOR, RUG, SHELF }
 private enum class Target { GUEST, CASHIER, KITCHEN }
-
 private data class GridPos(val col: Int, val row: Int)
 private data class HeroState(
     val cell: GridPos = GridPos(7, 7),
@@ -88,8 +87,8 @@ private data class HeroState(
 )
 
 private val guestCell = GridPos(11, 2)
-private val cashierCell = GridPos(3, 3)
-private val kitchenCell = GridPos(1, 2)
+private val cashierCell = GridPos(4, 2)
+private val kitchenCell = GridPos(2, 2)
 
 @Composable
 private fun BaoCodeGame() {
@@ -141,21 +140,11 @@ private fun BaoCodeGame() {
             action = command.label
             when (command.id) {
                 "to_guest" -> moveTo(guestCell, Target.GUEST)
-                "take" -> {
-                    hero = hero.copy(hasOrder = true)
-                    delay(650)
-                }
+                "take" -> { hero = hero.copy(hasOrder = true); delay(650) }
                 "to_counter" -> moveTo(cashierCell, Target.CASHIER)
-                "take_bao" -> {
-                    moveTo(kitchenCell, Target.KITCHEN)
-                    hero = hero.copy(hasBao = true)
-                    delay(650)
-                }
+                "take_bao" -> { moveTo(kitchenCell, Target.KITCHEN); hero = hero.copy(hasBao = true); delay(650) }
                 "return" -> moveTo(guestCell, Target.GUEST)
-                "serve" -> {
-                    hero = hero.copy(hasOrder = false, hasBao = false)
-                    delay(850)
-                }
+                "serve" -> { hero = hero.copy(hasOrder = false, hasBao = false); delay(850) }
             }
         }
         served++
@@ -165,38 +154,18 @@ private fun BaoCodeGame() {
 
     Row(Modifier.fillMaxSize().background(Terminal)) {
         Column(
-            modifier = Modifier
-                .width(286.dp)
-                .fillMaxHeight()
-                .padding(9.dp),
+            modifier = Modifier.width(286.dp).fillMaxHeight().padding(9.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            ProgramPanel(
-                program = program,
-                running = isRunning,
-                onRemove = { command -> program = program.filterNot { it.id == command.id } },
-                modifier = Modifier.weight(1.12f).fillMaxWidth()
-            )
-            CommandsPanel(
-                program = program,
-                running = isRunning,
-                available = commands,
-                onAdd = { command -> program = program + command },
-                onRun = { if (program.isNotEmpty()) isRunning = true },
-                modifier = Modifier.weight(.88f).fillMaxWidth()
-            )
+            ProgramPanel(program, isRunning, { command -> program = program.filterNot { it.id == command.id } }, Modifier.weight(1.12f).fillMaxWidth())
+            CommandsPanel(program, isRunning, commands, { command -> program = program + command }, { if (program.isNotEmpty()) isRunning = true }, Modifier.weight(.88f).fillMaxWidth())
         }
-
         Box(Modifier.weight(1f).fillMaxHeight()) {
             CafeWorld(hero, target)
             Surface(
                 color = Panel,
                 shape = RoundedCornerShape(7.dp),
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(9.dp)
-                    .width(165.dp)
-                    .border(1.dp, Neon.copy(alpha = .72f), RoundedCornerShape(7.dp))
+                modifier = Modifier.align(Alignment.TopEnd).padding(9.dp).width(165.dp).border(1.dp, Neon.copy(alpha = .72f), RoundedCornerShape(7.dp))
             ) {
                 Column(Modifier.padding(horizontal = 10.dp, vertical = 8.dp)) {
                     Text("16.09.2026   19:43", color = Ink, fontFamily = FontFamily.Monospace, fontSize = 10.sp)
@@ -204,61 +173,23 @@ private fun BaoCodeGame() {
                     Text("☔  +18°C  ·  Дождь", color = Ink, fontSize = 10.sp)
                 }
             }
-            Surface(
-                color = Terminal.copy(alpha = .9f),
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp)
-            ) {
-                Text(
-                    action,
-                    color = Neon,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 10.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 13.dp, vertical = 7.dp)
-                )
+            Surface(color = Terminal.copy(alpha = .9f), shape = RoundedCornerShape(8.dp), modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp)) {
+                Text(action, color = Neon, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 10.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(horizontal = 13.dp, vertical = 7.dp))
             }
         }
     }
 }
 
 @Composable
-private fun ProgramPanel(
-    program: List<Command>,
-    running: Boolean,
-    onRemove: (Command) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        color = Panel,
-        shape = RoundedCornerShape(8.dp),
-        modifier = modifier.border(1.dp, Neon.copy(alpha = .72f), RoundedCornerShape(8.dp))
-    ) {
+private fun ProgramPanel(program: List<Command>, running: Boolean, onRemove: (Command) -> Unit, modifier: Modifier = Modifier) {
+    Surface(color = Panel, shape = RoundedCornerShape(8.dp), modifier = modifier.border(1.dp, Neon.copy(alpha = .72f), RoundedCornerShape(8.dp))) {
         Column(Modifier.fillMaxSize().padding(9.dp)) {
             Text("// PROGRAM", color = Neon, fontFamily = FontFamily.Monospace, fontSize = 11.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(6.dp))
-            Column(
-                Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(5.dp))
-                    .background(Color(0xFF030A0B))
-                    .padding(8.dp)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(3.dp)
-            ) {
-                if (program.isEmpty()) {
-                    Text("// выбери команду\n// ниже", color = Color(0xFF66807A), fontFamily = FontFamily.Monospace, fontSize = 10.sp)
-                } else {
-                    program.forEachIndexed { index, command ->
-                        Text(
-                            "${index + 1}  ${command.source}",
-                            color = if (running) Color(0xFF6B7775) else Cream,
-                            fontFamily = FontFamily.Monospace,
-                            fontSize = 10.sp,
-                            modifier = Modifier.clickable(enabled = !running) { onRemove(command) }
-                        )
-                    }
+            Column(Modifier.fillMaxSize().clip(RoundedCornerShape(5.dp)).background(Color(0xFF030A0B)).padding(8.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                if (program.isEmpty()) Text("// выбери команду\n// ниже", color = Color(0xFF66807A), fontFamily = FontFamily.Monospace, fontSize = 10.sp)
+                else program.forEachIndexed { index, command ->
+                    Text("${index + 1}  ${command.source}", color = if (running) Color(0xFF6B7775) else Cream, fontFamily = FontFamily.Monospace, fontSize = 10.sp, modifier = Modifier.clickable(enabled = !running) { onRemove(command) })
                 }
             }
         }
@@ -266,45 +197,18 @@ private fun ProgramPanel(
 }
 
 @Composable
-private fun CommandsPanel(
-    program: List<Command>,
-    running: Boolean,
-    available: List<Command>,
-    onAdd: (Command) -> Unit,
-    onRun: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        color = Panel,
-        shape = RoundedCornerShape(8.dp),
-        modifier = modifier.border(1.dp, Neon.copy(alpha = .72f), RoundedCornerShape(8.dp))
-    ) {
+private fun CommandsPanel(program: List<Command>, running: Boolean, available: List<Command>, onAdd: (Command) -> Unit, onRun: () -> Unit, modifier: Modifier = Modifier) {
+    Surface(color = Panel, shape = RoundedCornerShape(8.dp), modifier = modifier.border(1.dp, Neon.copy(alpha = .72f), RoundedCornerShape(8.dp))) {
         Column(Modifier.fillMaxSize().padding(9.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                 Text("// COMMANDS", color = Neon, fontFamily = FontFamily.Monospace, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                Button(
-                    onClick = onRun,
-                    enabled = !running && program.isNotEmpty(),
-                    contentPadding = PaddingValues(horizontal = 9.dp, vertical = 0.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Neon, contentColor = Terminal),
-                    modifier = Modifier.height(29.dp)
-                ) { Text("▶ RUN", fontSize = 9.sp, fontWeight = FontWeight.Black) }
+                Button(onClick = onRun, enabled = !running && program.isNotEmpty(), contentPadding = PaddingValues(horizontal = 9.dp, vertical = 0.dp), colors = ButtonDefaults.buttonColors(containerColor = Neon, contentColor = Terminal), modifier = Modifier.height(29.dp)) { Text("▶ RUN", fontSize = 9.sp, fontWeight = FontWeight.Black) }
             }
             Spacer(Modifier.height(6.dp))
-            Column(
-                Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(5.dp)
-            ) {
+            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 available.forEach { command ->
                     val count = program.count { it.id == command.id }
-                    Surface(
-                        color = if (count > 0) Color(0xFF102A24) else Panel2,
-                        shape = RoundedCornerShape(5.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .border(1.dp, if (count > 0) NeonSoft else Color(0xFF1A3535), RoundedCornerShape(5.dp))
-                            .clickable(enabled = !running) { onAdd(command) }
-                    ) {
+                    Surface(color = if (count > 0) Color(0xFF102A24) else Panel2, shape = RoundedCornerShape(5.dp), modifier = Modifier.fillMaxWidth().border(1.dp, if (count > 0) NeonSoft else Color(0xFF1A3535), RoundedCornerShape(5.dp)).clickable(enabled = !running) { onAdd(command) }) {
                         Row(Modifier.padding(horizontal = 8.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                             Text(command.source, color = Cream, fontFamily = FontFamily.Monospace, fontSize = 9.sp, modifier = Modifier.weight(1f))
                             if (count > 0) Text("×$count", color = Neon, fontFamily = FontFamily.Monospace, fontSize = 8.sp)
@@ -324,29 +228,17 @@ private fun CafeWorld(hero: HeroState, target: Target?) {
         val tileW = min(size.width / 17f, size.height / 10f)
         val tileH = tileW * .50f
         val origin = Offset(size.width * .49f, size.height * .17f)
-
-        fun center(col: Float, row: Float): Offset = Offset(
-            origin.x + (col - row) * tileW * .5f,
-            origin.y + (col + row) * tileH * .5f
-        )
+        fun center(col: Float, row: Float): Offset = Offset(origin.x + (col - row) * tileW * .5f, origin.y + (col + row) * tileH * .5f)
 
         drawRect(Color(0xFF020708))
         drawAmbientGlow(size.width * .52f, size.height * .55f, size.width * .62f)
-
-        for (r in 0 until rows) {
-            for (c in 0 until cols) {
-                val p = center(c.toFloat(), r.toFloat())
-                val type = tileAt(c, r)
-                drawIsoTile(p, tileW, tileH, type)
-            }
-        }
-
-        drawBackWalls(center, tileW, tileH, cols, rows)
-        drawCafeDecor(center, tileW, tileH)
-        drawTarget(center, tileW, tileH, target, hero)
+        for (r in 0 until rows) for (c in 0 until cols) drawIsoTile(center(c.toFloat(), r.toFloat()), tileW, tileH, tileAt(c, r))
+        drawBackWalls(::center, tileW, tileH, cols, rows)
+        drawCafeDecor(::center, tileW, tileH)
+        drawTarget(::center, tileW, tileH, target, hero)
         drawGuestSprite(center(guestCell.col.toFloat(), guestCell.row.toFloat()), tileW * .20f)
         drawHeroSprite(center(hero.renderX, hero.renderY), tileW * .22f, hero.facing, hero.moving, hero.hasOrder, hero.hasBao)
-        drawForegroundEdge(center, tileW, tileH, cols, rows)
+        drawForegroundEdge(::center, tileW, tileH, cols, rows)
     }
 }
 
@@ -364,9 +256,7 @@ private fun tileAt(c: Int, r: Int): TileType {
 }
 
 private fun DrawScope.drawAmbientGlow(x: Float, y: Float, radius: Float) {
-    for (i in 5 downTo 1) {
-        drawCircle(Color(0xFFFFA05A).copy(alpha = .012f * i), radius * i / 5f, Offset(x, y))
-    }
+    for (i in 5 downTo 1) drawCircle(Color(0xFFFFA05A).copy(alpha = .012f * i), radius * i / 5f, Offset(x, y))
 }
 
 private fun DrawScope.drawIsoTile(center: Offset, tileW: Float, tileH: Float, type: TileType) {
@@ -379,30 +269,19 @@ private fun DrawScope.drawIsoTile(center: Offset, tileW: Float, tileH: Float, ty
     drawPath(path, base)
     drawPath(path, FloorEdge.copy(alpha = .72f), style = Stroke(width = 1.2f))
     if (type == TileType.FLOOR || type == TileType.RUG) {
-        val p1 = Offset(center.x - tileW * .22f, center.y)
-        val p2 = Offset(center.x + tileW * .22f, center.y)
-        drawLine(Color(0xFFE6A36A).copy(alpha = .16f), p1, p2, 1f)
+        drawLine(Color(0xFFE6A36A).copy(alpha = .16f), Offset(center.x - tileW * .22f, center.y), Offset(center.x + tileW * .22f, center.y), 1f)
     }
 }
 
 private fun DrawScope.drawBackWalls(center: (Float, Float) -> Offset, tileW: Float, tileH: Float, cols: Int, rows: Int) {
-    for (c in 0 until cols) {
-        val p = center(c.toFloat(), 0f)
-        drawWallBlock(p, tileW, tileH, Color(0xFF34494C), Color(0xFF1C2C30))
-    }
-    for (r in 1 until rows) {
-        val p = center(0f, r.toFloat())
-        drawWallBlock(p, tileW, tileH, Color(0xFF304447), Color(0xFF1A2A2D))
-    }
-    val sign = center(5.7f, .15f)
-    drawIsoPanel(sign, tileW * 1.55f, tileH * 2.2f, Color(0xFF51352D), Color(0xFFFFD18A))
-    val sign2 = center(9.2f, .10f)
-    drawIsoPanel(sign2, tileW * 1.8f, tileH * 2.35f, Color(0xFF47302B), Color(0xFFFFB56D))
+    for (c in 0 until cols) drawWallBlock(center(c.toFloat(), 0f), tileW, tileH, Color(0xFF34494C), Color(0xFF1C2C30))
+    for (r in 1 until rows) drawWallBlock(center(0f, r.toFloat()), tileW, tileH, Color(0xFF304447), Color(0xFF1A2A2D))
+    drawIsoPanel(center(5.7f, .15f), tileW * 1.55f, tileH * 2.2f, Color(0xFF51352D), Color(0xFFFFD18A))
+    drawIsoPanel(center(9.2f, .10f), tileW * 1.8f, tileH * 2.35f, Color(0xFF47302B), Color(0xFFFFB56D))
 }
 
 private fun DrawScope.drawWallBlock(center: Offset, tileW: Float, tileH: Float, front: Color, side: Color) {
-    val top = isoPath(center, tileW, tileH)
-    drawPath(top, front)
+    drawPath(isoPath(center, tileW, tileH), front)
     val h = tileH * 2.0f
     val leftTop = Offset(center.x - tileW * .5f, center.y)
     val rightTop = Offset(center.x, center.y + tileH * .5f)
@@ -454,8 +333,7 @@ private fun DrawScope.drawCounterFurniture(p: Offset, tileW: Float, tileH: Float
 }
 
 private fun DrawScope.drawTableFurniture(p: Offset, tileW: Float, tileH: Float, occupied: Boolean) {
-    val shadow = Offset(p.x, p.y + tileH * .45f)
-    drawOval(Color.Black.copy(alpha = .25f), shadow, Size(tileW * .85f, tileH * .42f))
+    drawOval(Color.Black.copy(alpha = .25f), Offset(p.x - tileW * .42f, p.y + tileH * .45f), Size(tileW * .85f, tileH * .42f))
     drawIsoBox(p, tileW * .85f, tileH * .60f, tileH * .68f, WoodLight, WoodDark)
     drawLine(Color(0xFFE4AA6A), Offset(p.x - tileW * .22f, p.y), Offset(p.x + tileW * .22f, p.y), 1.5f)
     if (occupied) {
@@ -503,11 +381,7 @@ private fun DrawScope.drawLamp(p: Offset, tileW: Float) {
 
 private fun DrawScope.drawTarget(center: (Float, Float) -> Offset, tileW: Float, tileH: Float, target: Target?, hero: HeroState) {
     if (target == null || hero.moving) return
-    val cell = when (target) {
-        Target.GUEST -> guestCell
-        Target.CASHIER -> cashierCell
-        Target.KITCHEN -> kitchenCell
-    }
+    val cell = when (target) { Target.GUEST -> guestCell; Target.CASHIER -> cashierCell; Target.KITCHEN -> kitchenCell }
     val p = center(cell.col.toFloat(), cell.row.toFloat())
     drawIsoTile(p + Offset(0f, tileH * .03f), tileW * .78f, tileH * .50f, TileType.RUG)
     drawLine(Neon, p - Offset(tileW * .28f, 0f), p + Offset(tileW * .28f, 0f), 3f, StrokeCap.Round)
@@ -564,11 +438,9 @@ private fun DrawScope.drawBao(p: Offset, r: Float) {
 }
 
 private fun DrawScope.drawForegroundEdge(center: (Float, Float) -> Offset, tileW: Float, tileH: Float, cols: Int, rows: Int) {
-    for (c in 0 until cols) {
-        if (c % 2 == 0) {
-            val p = center(c.toFloat(), (rows - 1).toFloat())
-            drawLine(Color(0xFF172326), p + Offset(0f, tileH * .45f), p + Offset(tileW * .50f, tileH * .95f), 3f)
-        }
+    for (c in 0 until cols) if (c % 2 == 0) {
+        val p = center(c.toFloat(), (rows - 1).toFloat())
+        drawLine(Color(0xFF172326), p + Offset(0f, tileH * .45f), p + Offset(tileW * .50f, tileH * .95f), 3f)
     }
 }
 
@@ -581,8 +453,7 @@ private fun isoPath(center: Offset, tileW: Float, tileH: Float): Path = Path().a
 }
 
 private fun DrawScope.drawIsoBox(center: Offset, width: Float, depth: Float, height: Float, top: Color, side: Color) {
-    val topPath = isoPath(center, width, depth)
-    drawPath(topPath, top)
+    drawPath(isoPath(center, width, depth), top)
     val a = Offset(center.x - width * .5f, center.y)
     val b = Offset(center.x, center.y + depth * .5f)
     val c = Offset(center.x + width * .5f, center.y)
