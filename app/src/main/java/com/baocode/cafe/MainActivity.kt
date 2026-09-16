@@ -197,6 +197,7 @@ private fun World3(hero: Hero3, target: Target3?, grid: CafeGrid5) {
         }
         drawGridObjects5(::center, w, h, grid)
         drawGridTarget5(::center, w, h, target)
+        drawStage6Lighting5(::center, w, h, hero.x, hero.y)
         drawCafeNpcCast(::center, w)
         drawHero3(center(hero.x, hero.y), w * .22f, hero)
     }
